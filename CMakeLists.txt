@@ -32,13 +32,13 @@ target_include_directories(
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
 )
 
-find_package(header_libraries CONFIG REQUIRED)
+find_package(daw_header_libraries CONFIG REQUIRED)
 target_link_libraries(utf_range INTERFACE daw::header_libraries)
 
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
-set(utf_range_directory "utf_range-${PROJECT_VERSION}")
+set(utf_range_directory "daw_utf_range-${PROJECT_VERSION}")
 set(
     utf_range_include_directory
     "${CMAKE_INSTALL_INCLUDEDIR}/${utf_range_directory}"
@@ -57,7 +57,7 @@ install(
 )
 
 write_basic_package_version_file(
-    utf_rangeConfigVersion.cmake
+    daw_utf_rangeConfigVersion.cmake
     COMPATIBILITY SameMajorVersion
     ARCH_INDEPENDENT
 )
@@ -68,14 +68,16 @@ set(
 )
 
 install(
-    FILES "${PROJECT_BINARY_DIR}/utf_rangeConfigVersion.cmake"
+    FILES
+    "${PROJECT_SOURCE_DIR}/cmake/daw_utf_rangeConfig.cmake"
+    "${PROJECT_BINARY_DIR}/daw_utf_rangeConfigVersion.cmake"
     DESTINATION "${utf_range_install_cmakedir}"
     COMPONENT utf_range_Development
 )
 
 install(
     EXPORT utf_rangeTargets
-    FILE utf_rangeConfig.cmake
+    FILE daw_utf_rangeTargets.cmake
     NAMESPACE daw::
     DESTINATION "${utf_range_install_cmakedir}"
     COMPONENT utf_range_Development
