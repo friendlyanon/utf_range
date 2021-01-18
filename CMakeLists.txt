@@ -6,68 +6,81 @@
 # Official repository: https://github.com/beached/utf_range
 #
 
-cmake_minimum_required( VERSION 3.10 ) 
+cmake_minimum_required(VERSION 3.14) 
 
-project( "utf_range"
-	VERSION "1.1.1" 
-	DESCRIPTION "UTF8 Iterator/Range for traversing utf8 text"
-	HOMEPAGE_URL "https://github.com/beached/utf_range"
-	LANGUAGES C CXX)
-
-set( CMAKE_CXX_STANDARD 17 CACHE STRING "The C++ standard whose features are requested.")
-set( CMAKE_CXX_STANDARD_REQUIRED ON)
-set( CMAKE_CXX_EXTENSIONS OFF)
-
-add_subdirectory(extern)
-
-include( GNUInstallDirs)
-set( utf_range_INSTALL_CMAKEDIR
-	"${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake"
-	CACHE STRING
-	"The install directory to use for CMake package config files") 
-
-set( PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
-
-add_library( ${PROJECT_NAME} INTERFACE ) 
-add_library( daw::${PROJECT_NAME} ALIAS ${PROJECT_NAME} )
-target_link_libraries( ${PROJECT_NAME} INTERFACE daw::header_libraries ) 
-
-target_link_libraries( ${PROJECT_NAME} INTERFACE daw::header_libraries ${COMPILER_SPECIFIC_LIBS} )
-target_compile_features( ${PROJECT_NAME} INTERFACE cxx_std_17)
-target_include_directories( ${PROJECT_NAME}
-	INTERFACE
-	"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-	"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+project(
+    utf_range
+    VERSION 1.1.1
+    DESCRIPTION "UTF8 Iterator/Range for traversing utf8 text"
+    HOMEPAGE_URL "https://github.com/beached/utf_range"
+    LANGUAGES CXX
 )
 
-install( TARGETS ${PROJECT_NAME}
-	EXPORT ${PROJECT_NAME}_Targets
-	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+set(daw_utf_range_warning_guard SYSTEM)
+if(daw_utf_range_INCLUDE_WITHOUT_SYSTEM)
+  set(daw_utf_range_warning_guard "")
+endif()
 
-include( CMakePackageConfigHelpers)
+add_library(utf_range INTERFACE) 
+add_library(daw::utf_range ALIAS utf_range)
 
-configure_package_config_file( 
-	"${PROJECT_SOURCE_DIR}/cmake/daw_${PROJECT_NAME}Config.cmake.in"
-	"${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-	INSTALL_DESTINATION
-	${utf_range_INSTALL_CMAKEDIR} )
+target_compile_features(utf_range INTERFACE cxx_std_17)
+target_include_directories(
+    utf_range
+    ${daw_utf_range_warning_guard}
+    INTERFACE
+    "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+)
 
-write_basic_package_version_file( "${PROJECT_NAME}ConfigVersion.cmake"
-	VERSION ${PROJECT_VERSION}
-	COMPATIBILITY SameMajorVersion)
+find_package(header_libraries CONFIG REQUIRED)
+target_link_libraries(utf_range INTERFACE daw::header_libraries)
 
-install( EXPORT ${PROJECT_NAME}_Targets
-	FILE ${PROJECT_NAME}Targets.cmake
-	NAMESPACE daw::
-	DESTINATION ${utf_range_INSTALL_CMAKEDIR})
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
 
-install( FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
-	"${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-	DESTINATION ${utf_range_INSTALL_CMAKEDIR}$ )
+set(utf_range_directory "utf_range-${PROJECT_VERSION}")
+set(
+    utf_range_include_directory
+    "${CMAKE_INSTALL_INCLUDEDIR}/${utf_range_directory}"
+)
 
-install( DIRECTORY ${PROJECT_SOURCE_DIR}/include/daw DESTINATION include )
-install( DIRECTORY ${PROJECT_SOURCE_DIR}/include/utf8 DESTINATION include )
-install( FILES ${PROJECT_SOURCE_DIR}/include/utf8.h DESTINATION include )
-			
+install(
+    DIRECTORY "${PROJECT_SOURCE_DIR}/include/"
+    DESTINATION "${utf_range_include_directory}"
+    COMPONENT utf_range_Development
+)
+
+install(
+  TARGETS utf_range
+	EXPORT utf_rangeTargets
+  INCLUDES DESTINATION "${utf_range_include_directory}"
+)
+
+write_basic_package_version_file(
+    utf_rangeConfigVersion.cmake
+    COMPATIBILITY SameMajorVersion
+    ARCH_INDEPENDENT
+)
+
+set(
+    utf_range_install_cmakedir
+    "${CMAKE_INSTALL_LIBDIR}/cmake/${utf_range_directory}"
+)
+
+install(
+    FILES "${PROJECT_BINARY_DIR}/utf_rangeConfigVersion.cmake"
+    DESTINATION "${utf_range_install_cmakedir}"
+    COMPONENT utf_range_Development
+)
+
+install(
+    EXPORT utf_rangeTargets
+    FILE utf_rangeConfig.cmake
+    NAMESPACE daw::
+    DESTINATION "${utf_range_install_cmakedir}"
+    COMPONENT utf_range_Development
+)
+
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  include(CPack)
+endif()
